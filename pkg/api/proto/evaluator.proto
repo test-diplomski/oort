@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option go_package = "github.com/c12s/oort/pkg/api";
+
+package proto;
+
+import "model.proto";
+
+service OortEvaluator {
+  rpc Authorize(AuthorizationReq) returns (AuthorizationResp) {}
+  rpc GetGrantedPermissions(GetGrantedPermissionsReq) returns (GetGrantedPermissionsResp) {}
+}
+
+message AuthorizationReq {
+  Resource subject = 1;
+  Resource object = 2;
+  repeated Attribute envAttributes = 3;
+  string permissionName = 4;
+}
+
+message AuthorizationResp {
+  bool authorized = 1;
+}
+
+message GetGrantedPermissionsReq {
+  Resource subject = 1;
+  repeated Attribute envAttributes = 2;
+}
+
+message GetGrantedPermissionsResp {
+  repeated GrantedPermission permissions = 1;
+}

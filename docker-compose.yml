@@ -1,0 +1,67 @@
+version: "3.8"
+
+services:
+
+  oort:
+    build:
+      context: ../
+      dockerfile: oort/Dockerfile
+    image: oort
+    container_name: oort
+    hostname: ${OORT_HOSTNAME}
+    expose:
+      - ${OORT_PORT}
+    ports:
+      - ${OORT_PORT}:${OORT_PORT}
+    environment:
+      - OORT_PORT=${OORT_PORT}
+      - NEO4J_HOSTNAME=${NEO4J_HOSTNAME}
+      - NEO4J_BOLT_PORT=${NEO4J_BOLT_PORT}
+      - NEO4J_DBNAME=${NEO4J_DBNAME}
+      - NATS_HOSTNAME=${NATS_HOSTNAME}
+      - NATS_PORT=${NATS_PORT}
+      - NATS_USERNAME=${NATS_USERNAME}
+      - NATS_PASSWORD=${NATS_PASSWORD}
+    networks:
+      - network
+    depends_on:
+      - neo4j
+      - nats
+
+  neo4j:
+    image: neo4j:4.4.12
+    container_name: neo4j
+    hostname: ${NEO4J_HOSTNAME}
+    restart: on-failure
+    expose:
+      - ${NEO4J_HTTP_PORT}
+      - ${NEO4J_BOLT_PORT}
+    ports:
+      - ${NEO4J_HTTP_PORT}:${NEO4J_HTTP_PORT}
+      - ${NEO4J_BOLT_PORT}:${NEO4J_BOLT_PORT}
+    environment:
+      - NEO4J_apoc_export_file_enabled=${NEO4J_apoc_export_file_enabled}
+      - NEO4J_apoc_import_file_enabled=${NEO4J_apoc_import_file_enabled}
+      - NEO4J_apoc_import_file_use__neo4j__config=${NEO4J_apoc_import_file_use__neo4j__config}
+      - NEO4JLABS_PLUGINS=${NEO4J_PLUGINS}
+      - NEO4J_dbms_connector_bolt_listen__address=:${NEO4J_BOLT_PORT}
+      - NEO4J_dbms_connector_http_listen__address=:${NEO4J_HTTP_PORT}
+      - NEO4J_dbms_security_auth__enabled=${NEO4J_AUTH_ENABLED}
+    networks:
+      - network
+
+  nats:
+    image: nats:latest
+    container_name: nats
+    expose:
+      - ${NATS_PORT}
+    ports:
+      - ${NATS_PORT}:${NATS_PORT}
+    hostname: ${NATS_HOSTNAME}
+    restart: on-failure
+    networks:
+      - network
+
+networks:
+  network:
+    driver: bridge
